@@ -16,21 +16,10 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/tv_petName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="@dimen/sp_16"
-            android:text="Bruno" />
-
-        <TextView
             android:id="@+id/tv_petType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/sp_12"
-            android:textColor="@color/theme_background"
-            android:text="Dog" />
+            android:textStyle="bold"
+            android:textSize="@dimen/sp_16" />
     </LinearLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

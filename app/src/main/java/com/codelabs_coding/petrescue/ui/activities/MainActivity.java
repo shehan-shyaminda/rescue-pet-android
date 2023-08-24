@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -19,14 +18,12 @@ import com.codelabs_coding.petrescue.R;
 import com.codelabs_coding.petrescue.models.UserModel;
 import com.codelabs_coding.petrescue.utils.BundleUtils;
 import com.codelabs_coding.petrescue.utils.CommonUtils;
+import com.codelabs_coding.petrescue.utils.MsgEvent;
+import com.codelabs_coding.petrescue.utils.RxBus;
+import com.codelabs_coding.petrescue.utils.RxSubscriptions;
 import com.codelabs_coding.petrescue.utils.SpUtils;
 import com.codelabs_coding.petrescue.utils.dialogUtils.DialogUtils;
-import com.codelabs_coding.petrescue.utils.dialogUtils.LoadingDialog;
-import com.codelabs_coding.petrescue.utils.networkUtils.ApiService;
 import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitCallback;
-import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitProvider;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,38 +37,33 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.reactivex.rxjava3.disposables.Disposable;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final int DOUBLE_PRESS_EXIT_TIME = 2000; // 2 seconds
     FloatingActionButton fabMenu, fabRelocate, fabLogout;
     private long lastBackPressTime = 0;
     private GoogleMap mMap;
-    private FusedLocationProviderClient fusedLocationProviderClient;
     private TextView spinner;
     private ImageView locateMe, locatePet, ivAddPet, ivPetHistory;
     private LinearLayout fabSubMenu;
-    private UserModel userModel;
-    private RetrofitProvider retrofitProvider;
-    private LoadingDialog loadingDialog;
-    private ApiService apiService;
-    private SpUtils spUtils;
+    private UserModel.User userModel;
     private List<UserModel.User.Pet> petList = new ArrayList<>();
     private UserModel.User.Pet selectedPet;
     private boolean isSubMenuVisible = false;
-    private int selectedPetId = -1;
+    private int sPosition = -1;
+    private Disposable mSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         spinner = findViewById(R.id.ll_selected_pet);
         locateMe = findViewById(R.id.ic_locate_me);
@@ -87,27 +79,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        retrofitProvider = new RetrofitProvider();
-        apiService = retrofitProvider.getApiService();
-        loadingDialog = new LoadingDialog(this);
-        spUtils = new SpUtils(this);
 
-        userModel = new Gson().fromJson(spUtils.getString(SpUtils.KEY_USER_OBJECT), UserModel.class);
-        petList = userModel.getUser().getPets();
-        spinner.setText(!petList.isEmpty() ? petList.get(0).getPetNickname() : "None");
+        init();
 
         spinner.setOnClickListener(v -> showCustomBottomSheet());
         locateMe.setOnClickListener(v -> checkForPermissions());
         locateMe.setOnClickListener(v -> checkForPermissions());
+
         ivAddPet.setOnClickListener(v -> CommonUtils.startActivity(MainActivity.this, AddPetActivity.class));
         ivPetHistory.setOnClickListener(v -> {
-            if (petList.isEmpty() || spinner.getText() == petList.get(0).getPetNickname()) return;
+            if (sPosition == -1 || petList.get(sPosition).getLocationHistory() == null) return;
             CommonUtils.startActivity(MainActivity.this, PetHistoryActivity.class, BundleUtils.getBundleSerializableString("petName", spinner.getText().toString(), "petHistory", selectedPet.getLocationHistory()));
         });
         locatePet.setOnClickListener(v -> {
-            if (petList.isEmpty() || selectedPetId == -1) return;
-            focusPetLocation(CommonUtils.formatDouble(petList.get(selectedPetId).getPetLatitude()), CommonUtils.formatDouble(petList.get(selectedPetId).getPetLongitude()));
+            if (petList.isEmpty() || sPosition == -1) return;
+            focusPetLocation(CommonUtils.formatDouble(petList.get(sPosition).getPetLatitude()), CommonUtils.formatDouble(petList.get(sPosition).getPetLongitude()));
         });
         fabMenu.setOnClickListener(v -> toggleSubMenu());
         fabLogout.setOnClickListener(v -> logout());
@@ -124,6 +110,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         });
+    }
+
+    private void init() {
+        userModel = new Gson().fromJson(spUtils.getString(SpUtils.KEY_USER_OBJECT), UserModel.User.class);
+        petList = userModel.getPets();
+        spinner.setText(!petList.isEmpty() ? petList.get(0).getPetNickname() : "None");
     }
 
     private void toggleSubMenu() {
@@ -191,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
                 if (location != null) {
-                    updateOwner(location.getLatitude(), location.getLongitude());
+                    updateOwnerLocation(location.getLatitude(), location.getLongitude());
                 } else {
                     Toast.makeText(MainActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
                 }
@@ -199,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void updateOwner(Double latitude, Double longitude) {
+    private void updateOwnerLocation(Double latitude, Double longitude) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("userId", spUtils.getString(SpUtils.KEY_USERID));
         map.put("userLatitude", latitude);
@@ -232,16 +224,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void updateOwner() {
+        retrofitProvider.makeRequest(apiService.GetMySelf("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN)), new RetrofitCallback<UserModel.User>() {
+            @Override
+            public void onSuccess(UserModel.User response) {
+                loadingDialog.hideDialog();
+                spUtils.saveString(SpUtils.KEY_USER_OBJECT, new Gson().toJson(response));
+                init();
+            }
+
+            @Override
+            public void onError(int statusCode, String errorMessage) {
+                loadingDialog.hideDialog();
+                Log.e(TAG, "Request failed with code: " + statusCode);
+                Toast.makeText(MainActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                loadingDialog.dismiss();
+                Log.e(TAG, "onError: " + throwable.getLocalizedMessage());
+                throwable.printStackTrace();
+            }
+        });
+    }
+
     private void showCustomBottomSheet() {
         if (petList.isEmpty()) {
             Toast.makeText(this, "Please add a pet first!", Toast.LENGTH_SHORT).show();
             return;
         }
-        List<String> petsNames = petList.stream().map(UserModel.User.Pet::getPetNickname).collect(Collectors.toList());
+        List<Map<String, String>> petsNames = petList.stream()
+                .map(pet -> {
+                    Map<String, String> nameAndType = new HashMap<>();
+                    nameAndType.put("petName", pet.getPetNickname());
+                    nameAndType.put("petType", pet.getPetType());
+                    return nameAndType;
+                })
+                .collect(Collectors.toList());
+
         DialogUtils.showSimpleBottomMenuDialog(this, petsNames, position -> {
             Toast.makeText(this, petList.get(position).getPetNickname(), Toast.LENGTH_LONG).show();
             spinner.setText(petList.get(position).getPetNickname());
-            selectedPetId = position;
+            sPosition = position;
         });
     }
 
@@ -259,10 +284,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onBackPressed() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastBackPressTime < DOUBLE_PRESS_EXIT_TIME) {
-            super.onBackPressed(); // Exit the app
+            super.onBackPressed();
         } else {
             lastBackPressTime = currentTime;
             Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    @Override
+    public void registerRxBus() {
+        super.registerRxBus();
+        mSubscription = RxBus.getDefault().toObservable(MsgEvent.class)
+                .subscribe(msgEvent -> {
+                    switch (msgEvent.getBusinessKey()) {
+                        case MsgEvent.UPDATE_PET_LIST:
+                            updateOwner();
+                            break;
+                        case MsgEvent.UPDATE_USER_INFO:
+                            break;
+                    }
+                });
+
+        RxSubscriptions.add(mSubscription);
+    }
+
+    @Override
+    public void removeRxBus() {
+        super.removeRxBus();
+        RxSubscriptions.remove(mSubscription);
     }
 }

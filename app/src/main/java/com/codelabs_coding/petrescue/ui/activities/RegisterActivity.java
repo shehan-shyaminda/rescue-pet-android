@@ -4,48 +4,34 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.codelabs_coding.petrescue.R;
 import com.codelabs_coding.petrescue.models.UserModel;
-import com.codelabs_coding.petrescue.utils.BundleUtils;
 import com.codelabs_coding.petrescue.utils.CommonUtils;
+import com.codelabs_coding.petrescue.utils.MsgEvent;
+import com.codelabs_coding.petrescue.utils.RxBus;
+import com.codelabs_coding.petrescue.utils.RxSubscriptions;
 import com.codelabs_coding.petrescue.utils.SpUtils;
-import com.codelabs_coding.petrescue.utils.dialogUtils.LoadingDialog;
-import com.codelabs_coding.petrescue.utils.networkUtils.ApiService;
 import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitCallback;
-import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitProvider;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
 
+import io.reactivex.rxjava3.disposables.Disposable;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     private static final String TAG = "RegisterActivity";
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private RetrofitProvider retrofitProvider;
-    private LoadingDialog loadingDialog;
-    private ApiService apiService;
-    private SpUtils spUtils;
     private LatLng selfLocation;
     private EditText txtUserName, txtPassword, txtConPassword;
     private LinearLayout txtSignIn;
@@ -55,34 +41,25 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        txtUserName = findViewById(R.id.txt_username);
+        txtPassword = findViewById(R.id.txt_password);
+        txtConPassword = findViewById(R.id.txt_confirm_password);
+        btnRegister = findViewById(R.id.btn_register);
+        txtSignIn = findViewById(R.id.txt_sign_in);
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        retrofitProvider = new RetrofitProvider();
-        apiService = retrofitProvider.getApiService();
-        loadingDialog = new LoadingDialog(this);
-        spUtils = new SpUtils(this);
-        init();
+        checkForPermissions();
 
         btnRegister.setOnClickListener(v -> registerUser());
         txtSignIn.setOnClickListener(v -> CommonUtils.startActivity(RegisterActivity.this, LoginActivity.class));
     }
 
-    private void init() {
-        txtUserName = findViewById(R.id.txt_username);
-        txtPassword = findViewById(R.id.txt_password);
-        txtConPassword = findViewById(R.id.txt_confirm_password);
-        btnRegister = findViewById(R.id.btn_login);
-        txtSignIn = findViewById(R.id.txt_sign_up);
-        checkForPermissions();
-    }
-
     private void registerUser() {
         if (!validateInputs()) return;
-        if (!txtPassword.getText().equals(txtConPassword.getText())){
+        if (!txtPassword.getText().toString().equals(txtConPassword.getText().toString())) {
             Toast.makeText(RegisterActivity.this, "Passwords Must be Same!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (selfLocation == null){
+        if (selfLocation == null) {
             Toast.makeText(RegisterActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
             return;
         }

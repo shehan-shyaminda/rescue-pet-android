@@ -1,7 +1,5 @@
 package com.codelabs_coding.petrescue.ui.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -11,13 +9,9 @@ import android.widget.Toast;
 
 import com.codelabs_coding.petrescue.R;
 import com.codelabs_coding.petrescue.models.UserModel;
-import com.codelabs_coding.petrescue.utils.BundleUtils;
 import com.codelabs_coding.petrescue.utils.CommonUtils;
 import com.codelabs_coding.petrescue.utils.SpUtils;
-import com.codelabs_coding.petrescue.utils.dialogUtils.LoadingDialog;
-import com.codelabs_coding.petrescue.utils.networkUtils.ApiService;
 import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitCallback;
-import com.codelabs_coding.petrescue.utils.networkUtils.RetrofitProvider;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
@@ -25,13 +19,9 @@ import java.util.HashMap;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private static final String TAG = "LoginActivity";
-    private RetrofitProvider retrofitProvider;
-    private LoadingDialog loadingDialog;
-    private ApiService apiService;
-    private SpUtils spUtils;
     private EditText txtUserName, txtPassword;
     private LinearLayout txtSignUp;
     private Button btnLogin;
@@ -41,10 +31,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        retrofitProvider = new RetrofitProvider();
-        apiService = retrofitProvider.getApiService();
-        loadingDialog = new LoadingDialog(this);
-        spUtils = new SpUtils(this);
         init();
 
         btnLogin.setOnClickListener(v -> getMyDetails());
@@ -70,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(UserModel response) {
                 loadingDialog.hideDialog();
-                spUtils.saveString(SpUtils.KEY_USER_OBJECT, new Gson().toJson(response));
+                spUtils.saveString(SpUtils.KEY_USER_OBJECT, new Gson().toJson(response.getUser()));
                 spUtils.saveString(SpUtils.KEY_USERID, response.getUser().getUserId());
                 spUtils.saveString(SpUtils.KEY_USERNAME, response.getUser().getUsername());
                 spUtils.saveBoolean(SpUtils.KEY_IS_LOGGED_IN, true);
@@ -95,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private Boolean validateInputs(){
+    private Boolean validateInputs() {
         return !CommonUtils.getStrEditView(txtUserName).isEmpty() && !CommonUtils.getStrEditView(txtPassword).isEmpty();
     }
 }

@@ -23,7 +23,7 @@ public class UserModel implements Serializable {
         this.accessToken = value;
     }
 
-    public class User implements Serializable{
+    public class User implements Serializable {
         private String id;
         private String userId;
         private String username;
@@ -180,19 +180,34 @@ public class UserModel implements Serializable {
                 this.locationHistory = locationHistory;
             }
 
-            public class LocationHistory implements Serializable{
+            public class LocationHistory implements Serializable {
                 private long dateTime;
                 private String longitude;
                 private String latitude;
 
-                public long getDateTime() { return dateTime; }
-                public void setDateTime(long value) { this.dateTime = value; }
+                public long getDateTime() {
+                    return dateTime;
+                }
 
-                public String getLongitude() { return longitude; }
-                public void setLongitude(String value) { this.longitude = value; }
+                public void setDateTime(long value) {
+                    this.dateTime = value;
+                }
 
-                public String getLatitude() { return latitude; }
-                public void setLatitude(String value) { this.latitude = value; }
+                public String getLongitude() {
+                    return longitude;
+                }
+
+                public void setLongitude(String value) {
+                    this.longitude = value;
+                }
+
+                public String getLatitude() {
+                    return latitude;
+                }
+
+                public void setLatitude(String value) {
+                    this.latitude = value;
+                }
             }
 
         }

@@ -1,7 +1,5 @@
 package com.codelabs_coding.petrescue.ui.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
@@ -9,17 +7,15 @@ import android.widget.LinearLayout;
 import com.codelabs_coding.petrescue.R;
 import com.codelabs_coding.petrescue.utils.SpUtils;
 
-public class LauncherActivity extends AppCompatActivity {
+public class LauncherActivity extends BaseActivity {
 
     private LinearLayout llPetView;
-    private SpUtils spUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
         llPetView = findViewById(R.id.ll_pet_view);
-        spUtils = new SpUtils(this);
 
         llPetView.setAlpha(0f);
 

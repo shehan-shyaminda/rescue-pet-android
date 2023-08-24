@@ -51,4 +51,5 @@ dependencies {
     implementation 'com.github.ybq:Android-SpinKit:1.4.0'
     implementation 'dev.shreyaspatil.MaterialDialog:MaterialDialog:2.2.3'
     implementation 'com.airbnb.android:lottie:4.2.2'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.12'
 }
