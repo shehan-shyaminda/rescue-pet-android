@@ -49,4 +49,17 @@ public class BaseActivity extends AppCompatActivity implements BaseInterface {
     public void removeRxBus() {
 
     }
+
+    public void showDialog(Boolean isCancelable) {
+        if (!loadingDialog.isShowing()) {
+            loadingDialog.setCancelable(isCancelable);
+            loadingDialog.show();
+        }
+    }
+
+    public void hideDialog() {
+        if (loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        }
+    }
 }

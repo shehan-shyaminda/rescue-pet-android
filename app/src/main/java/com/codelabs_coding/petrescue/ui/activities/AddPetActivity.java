@@ -63,7 +63,7 @@ public class AddPetActivity extends BaseActivity {
             Toast.makeText(AddPetActivity.this, "Please select pet type!", Toast.LENGTH_SHORT).show();
             return;
         }
-        loadingDialog.showDialog(false);
+        showDialog(false);
         HashMap<String, Object> map = new HashMap<>();
         map.put("userId", spUtils.getString(SpUtils.KEY_USERID));
         map.put("petNickname", CommonUtils.getStrEditView(etPetName));
@@ -74,23 +74,16 @@ public class AddPetActivity extends BaseActivity {
         retrofitProvider.makeRequest(apiService.AddNewPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<UserModel.User.Pet>() {
             @Override
             public void onSuccess(UserModel.User.Pet response) {
-                loadingDialog.hideDialog();
+                hideDialog();
                 RxBus.getDefault().post(new MsgEvent(MsgEvent.UPDATE_PET_LIST));
                 finish();
             }
 
             @Override
             public void onError(int statusCode, String errorMessage) {
-                loadingDialog.hideDialog();
+                hideDialog();
                 Log.e(TAG, "Request failed with code: " + statusCode);
                 Toast.makeText(AddPetActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                loadingDialog.dismiss();
-                Log.e(TAG, "onError: " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
             }
         });
     }

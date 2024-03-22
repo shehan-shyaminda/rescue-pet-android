@@ -4,6 +4,4 @@ public interface RetrofitCallback<T> {
     void onSuccess(T response);
 
     void onError(int statusCode, String errorMessage);
-
-    void onFailure(Throwable throwable);
 }

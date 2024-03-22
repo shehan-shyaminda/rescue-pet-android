@@ -88,13 +88,6 @@ public class RegisterActivity extends BaseActivity {
                 Log.e(TAG, "Request failed with code: " + statusCode);
                 Toast.makeText(RegisterActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                loadingDialog.dismiss();
-                Log.e(TAG, "onError: " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-            }
         });
     }
 

@@ -71,13 +71,6 @@ public class LoginActivity extends BaseActivity {
                 Log.e(TAG, "Request failed with code: " + statusCode);
                 Toast.makeText(LoginActivity.this, "Please Check your Credentials", Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                loadingDialog.dismiss();
-                Log.e(TAG, "onError: " + throwable.getLocalizedMessage());
-                throwable.printStackTrace();
-            }
         });
     }
 

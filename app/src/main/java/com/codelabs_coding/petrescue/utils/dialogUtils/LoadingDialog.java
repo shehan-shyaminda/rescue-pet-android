@@ -36,6 +36,7 @@ public class LoadingDialog extends Dialog {
         getWindow().setBackgroundDrawableResource(android.R.color.transparent);
     }
 
+
     public void showDialog(Boolean isCancelable) {
         if (!isShowing()) {
             setCancelable(isCancelable);
