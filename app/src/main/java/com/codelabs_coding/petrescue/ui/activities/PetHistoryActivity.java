@@ -9,16 +9,15 @@ import android.widget.Toast;
 
 import com.codelabs_coding.petrescue.R;
 import com.codelabs_coding.petrescue.models.UserModel;
-import com.codelabs_coding.petrescue.ui.adapters.PetHistoryAdapter;
+//import com.codelabs_coding.petrescue.ui.adapters.PetHistoryAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PetHistoryActivity extends AppCompatActivity {
 
-    private List<UserModel.User.Pet.LocationHistory> contents = new ArrayList<>();
     private RecyclerView rvList;
-    private PetHistoryAdapter petHistoryAdapter;
+//    private PetHistoryAdapter petHistoryAdapter;
     private String petName;
 
     @Override
@@ -27,19 +26,19 @@ public class PetHistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pet_history);
         rvList = findViewById(R.id.rv_list);
         petName = this.getIntent().getStringExtra("petName");
-        contents = (List<UserModel.User.Pet.LocationHistory>) this.getIntent().getSerializableExtra("petHistory");
-        if (!contents.isEmpty()) {
-            initAdapter();
-        } else {
-            Toast.makeText(PetHistoryActivity.this, "No History founded for the Pet!", Toast.LENGTH_SHORT).show();
-        }
+//        contents = (List<UserModel.User.Pet.LocationHistory>) this.getIntent().getSerializableExtra("petHistory");
+//        if (!contents.isEmpty()) {
+//            initAdapter();
+//        } else {
+//            Toast.makeText(PetHistoryActivity.this, "No History founded for the Pet!", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     private void initAdapter() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvList.setLayoutManager(layoutManager);
-        petHistoryAdapter = new PetHistoryAdapter(contents, petName);
-        rvList.setAdapter(petHistoryAdapter);
-        petHistoryAdapter.notifyDataSetChanged();
+//        petHistoryAdapter = new PetHistoryAdapter(contents, petName);
+//        rvList.setAdapter(petHistoryAdapter);
+//        petHistoryAdapter.notifyDataSetChanged();
     }
 }

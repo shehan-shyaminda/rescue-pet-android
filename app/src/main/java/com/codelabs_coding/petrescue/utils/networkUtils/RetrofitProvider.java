@@ -25,8 +25,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitProvider {
-//    private static final String BASE_URL = "http://192.168.8.103:3000";
-        private static final String BASE_URL = "https://rescue-pet.onrender.com";
+    private static final String BASE_URL = "http://192.168.1.2:3000";
+//        private static final String BASE_URL = "https://rescue-pet.onrender.com";
     private final ApiService apiService;
 
     public RetrofitProvider() {

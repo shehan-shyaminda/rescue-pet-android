@@ -31,13 +31,13 @@ public class LoginActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        init();
+        initViews();
 
         btnLogin.setOnClickListener(v -> getMyDetails());
         txtSignUp.setOnClickListener(v -> CommonUtils.startActivity(LoginActivity.this, RegisterActivity.class));
     }
 
-    private void init() {
+    private void initViews() {
         txtUserName = findViewById(R.id.txt_username);
         txtPassword = findViewById(R.id.txt_password);
         btnLogin = findViewById(R.id.btn_login);
@@ -49,7 +49,7 @@ public class LoginActivity extends BaseActivity {
         loadingDialog.showDialog(false);
         HashMap<String, Object> map = new HashMap<>();
         map.put("username", CommonUtils.getStrEditView(txtUserName));
-        map.put("password", CommonUtils.getStrEditView(txtPassword));
+        map.put("userPassword", CommonUtils.getStrEditView(txtPassword));
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
         retrofitProvider.makeRequest(apiService.UserLogin(requestBody), new RetrofitCallback<UserModel>() {

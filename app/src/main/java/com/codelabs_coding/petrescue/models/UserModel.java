@@ -1,10 +1,14 @@
 package com.codelabs_coding.petrescue.models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.List;
 
 public class UserModel implements Serializable {
     private User user;
+
+    @SerializedName("access_token")
     private String accessToken;
 
     public User getUser() {
@@ -23,22 +27,27 @@ public class UserModel implements Serializable {
         this.accessToken = value;
     }
 
-    public class User implements Serializable {
-        private String id;
+    public static class User implements Serializable {
+
+        @SerializedName("_id")
         private String userId;
+
         private String username;
+
+        @SerializedName("userPassword")
         private String password;
+
+        @SerializedName("userPets")
         private List<Pet> pets;
-        private long v;
         private double userLatitude;
         private double userLongitude;
 
         public String getId() {
-            return id;
+            return userId;
         }
 
-        public void setId(String id) {
-            this.id = id;
+        public void setId(String userId) {
+            this.userId = userId;
         }
 
         public String getUserId() {
@@ -73,14 +82,6 @@ public class UserModel implements Serializable {
             this.pets = value;
         }
 
-        public long getV() {
-            return v;
-        }
-
-        public void setV(long value) {
-            this.v = value;
-        }
-
         public double getUserLatitude() {
             return userLatitude;
         }
@@ -97,119 +98,35 @@ public class UserModel implements Serializable {
             this.userLongitude = value;
         }
 
-        public class Pet implements Serializable {
-            private String petId;
-            private String userId;
-            private String petDeviceId;
-            private String petNickname;
-            private String petType;
-            private String petBread;
-            private String petLatitude;
-            private String petLongitude;
-            private List<LocationHistory> locationHistory;
+        public static class Pet implements Serializable {
 
-            public String getPetId() {
-                return petId;
+            private String petsId;
+            private String petsNickname;
+            private String petsType;
+
+            public String getPetsId() {
+                return petsId;
             }
 
-            public void setPetId(String value) {
-                this.petId = value;
+            public void setPetsId(String petsId) {
+                this.petsId = petsId;
             }
 
-            public String getUserId() {
-                return userId;
+            public String getPetsNickname() {
+                return petsNickname;
             }
 
-            public void setUserId(String value) {
-                this.userId = value;
+            public void setPetsNickname(String petsNickname) {
+                this.petsNickname = petsNickname;
             }
 
-            public String getPetDeviceId() {
-                return petDeviceId;
+            public String getPetsType() {
+                return petsType;
             }
 
-            public void setPetDeviceId(String value) {
-                this.petDeviceId = value;
+            public void setPetsType(String petsType) {
+                this.petsType = petsType;
             }
-
-            public String getPetNickname() {
-                return petNickname;
-            }
-
-            public void setPetNickname(String value) {
-                this.petNickname = value;
-            }
-
-            public String getPetType() {
-                return petType;
-            }
-
-            public void setPetType(String petType) {
-                this.petType = petType;
-            }
-
-            public String getPetBread() {
-                return petBread;
-            }
-
-            public void setPetBread(String petBread) {
-                this.petBread = petBread;
-            }
-
-            public String getPetLatitude() {
-                return petLatitude;
-            }
-
-            public void setPetLatitude(String value) {
-                this.petLatitude = value;
-            }
-
-            public String getPetLongitude() {
-                return petLongitude;
-            }
-
-            public void setPetLongitude(String value) {
-                this.petLongitude = value;
-            }
-
-            public List<LocationHistory> getLocationHistory() {
-                return locationHistory;
-            }
-
-            public void setLocationHistory(List<LocationHistory> locationHistory) {
-                this.locationHistory = locationHistory;
-            }
-
-            public class LocationHistory implements Serializable {
-                private long dateTime;
-                private String longitude;
-                private String latitude;
-
-                public long getDateTime() {
-                    return dateTime;
-                }
-
-                public void setDateTime(long value) {
-                    this.dateTime = value;
-                }
-
-                public String getLongitude() {
-                    return longitude;
-                }
-
-                public void setLongitude(String value) {
-                    this.longitude = value;
-                }
-
-                public String getLatitude() {
-                    return latitude;
-                }
-
-                public void setLatitude(String value) {
-                    this.latitude = value;
-                }
-            }
-
         }
     }
 }

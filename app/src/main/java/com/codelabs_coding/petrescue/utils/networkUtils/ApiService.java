@@ -21,8 +21,8 @@ public interface ApiService {
     @POST("/owner/addPet")
     Call<ResponseWrapper<UserModel.User.Pet>> AddNewPet(@Header("authorization") String auth, @Body RequestBody body);
 
-    @PUT("/owner/setLocation")
-    Call<ResponseWrapper<UserModel>> UpdateOwnerLocation(@Header("authorization") String auth, @Body RequestBody body);
+    @POST("/owner/setLocation")
+    Call<ResponseWrapper<UserModel.User>> UpdateOwnerLocation(@Header("authorization") String auth, @Body RequestBody body);
 
     @GET("/owner/getMySelf")
     Call<ResponseWrapper<UserModel.User>> GetMySelf(@Header("authorization") String auth);

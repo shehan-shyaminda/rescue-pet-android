@@ -16,4 +16,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Pet Rescue"
 include ':app'
-include ':dialog-library'
