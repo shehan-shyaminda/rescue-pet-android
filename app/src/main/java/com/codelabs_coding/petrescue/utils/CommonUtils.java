@@ -2,11 +2,17 @@ package com.codelabs_coding.petrescue.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.EditText;
 
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -81,8 +87,32 @@ public class CommonUtils {
     }
 
     public static String formatTimeStamp(long timestampInMillis) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        Date date = new Date(timestampInMillis);
-        return sdf.format(date);
+        LocalDate today = LocalDate.now();
+
+        LocalDate timestampDate = Instant.ofEpochMilli(timestampInMillis*1000)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm a");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (timestampDate.isEqual(today)) {
+            return Instant.ofEpochMilli(timestampInMillis*1000)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+                    .format(timeFormatter);
+        } else {
+            return timestampDate.format(dateFormatter);
+        }
     }
+
+    public static void openGoogleMaps(Uri uri, Context context) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setPackage("com.google.android.apps.maps");
+
+        if (intent.resolveActivity(context.getPackageManager()) != null) {
+            context.startActivity(intent);
+        }
+    }
+
 }

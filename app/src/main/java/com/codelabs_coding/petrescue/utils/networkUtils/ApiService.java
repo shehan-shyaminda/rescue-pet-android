@@ -1,5 +1,6 @@
 package com.codelabs_coding.petrescue.utils.networkUtils;
 
+import com.codelabs_coding.petrescue.models.PetsModal;
 import com.codelabs_coding.petrescue.models.UserModel;
 
 import okhttp3.RequestBody;
@@ -18,7 +19,10 @@ public interface ApiService {
     @POST("/owner/login")
     Call<ResponseWrapper<UserModel>> UserLogin(@Body RequestBody body);
 
-    @POST("/owner/addPet")
+    @POST("/pet/getPet")
+    Call<ResponseWrapper<PetsModal>> GetPet(@Header("authorization") String auth, @Body RequestBody body);
+
+    @POST("/pet/addPet")
     Call<ResponseWrapper<UserModel.User.Pet>> AddNewPet(@Header("authorization") String auth, @Body RequestBody body);
 
     @POST("/owner/setLocation")

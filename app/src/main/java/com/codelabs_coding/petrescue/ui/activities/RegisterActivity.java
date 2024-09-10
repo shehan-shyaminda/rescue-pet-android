@@ -66,18 +66,15 @@ public class RegisterActivity extends BaseActivity {
         loadingDialog.showDialog(false);
         HashMap<String, Object> map = new HashMap<>();
         map.put("username", CommonUtils.getStrEditView(txtUserName));
-        map.put("password", CommonUtils.getStrEditView(txtPassword));
+        map.put("userPassword", CommonUtils.getStrEditView(txtPassword));
+        map.put("userLongitude", selfLocation.longitude);
+        map.put("userLatitude", selfLocation.latitude);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
         retrofitProvider.makeRequest(apiService.CreateUser(requestBody), new RetrofitCallback<UserModel>() {
             @Override
             public void onSuccess(UserModel response) {
                 loadingDialog.hideDialog();
-                spUtils.saveString(SpUtils.KEY_USER_OBJECT, new Gson().toJson(response));
-                spUtils.saveString(SpUtils.KEY_USERID, response.getUser().getUserId());
-                spUtils.saveString(SpUtils.KEY_USERNAME, response.getUser().getUsername());
-                spUtils.saveBoolean(SpUtils.KEY_IS_LOGGED_IN, true);
-                spUtils.saveString(SpUtils.KEY_AUTH_TOKEN, response.getAccessToken());
                 CommonUtils.startActivity(RegisterActivity.this, MainActivity.class);
                 finish();
             }

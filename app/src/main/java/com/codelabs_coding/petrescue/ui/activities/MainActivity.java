@@ -11,12 +11,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.codelabs_coding.petrescue.R;
+import com.codelabs_coding.petrescue.models.PetsModal;
 import com.codelabs_coding.petrescue.models.UserModel;
+import com.codelabs_coding.petrescue.utils.BundleUtils;
 import com.codelabs_coding.petrescue.utils.CommonUtils;
 import com.codelabs_coding.petrescue.utils.MsgEvent;
 import com.codelabs_coding.petrescue.utils.RxBus;
@@ -82,16 +85,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         init();
 
         spinner.setOnClickListener(v -> showCustomBottomSheet());
-//        ivAddPet.setOnClickListener(v -> CommonUtils.startActivity(MainActivity.this, AddPetActivity.class));
-//        ivPetHistory.setOnClickListener(v -> {
-//            if (sPosition == -1 || petList.get(sPosition).getLocationHistory() == null) return;
-//            CommonUtils.startActivity(MainActivity.this, PetHistoryActivity.class, BundleUtils.getBundleSerializableString("petName", spinner.getText().toString(), "petHistory", selectedPet.getLocationHistory()));
-//        });
-//        locatePet.setOnClickListener(v -> {
-//            if ((petList != null && petList.isEmpty()) || sPosition == -1) return;
-//            assert petList != null;
-//            focusPetLocation(CommonUtils.formatDouble(petList.get(sPosition).getPetLatitude()), CommonUtils.formatDouble(petList.get(sPosition).getPetLongitude()));
-//        });
+        ivAddPet.setOnClickListener(v -> CommonUtils.startActivity(MainActivity.this, AddPetActivity.class));
+        ivPetHistory.setOnClickListener(v -> {
+            if (sPosition == RecyclerView.NO_POSITION) return;
+            CommonUtils.startActivity(MainActivity.this, PetHistoryActivity.class, BundleUtils.getBundle2String("petId", userModel.getPets().get(sPosition).getPetsId(), "petName", userModel.getPets().get(sPosition).getPetsNickname()));
+        });
+        locatePet.setOnClickListener(v -> {
+            if (null == userModel.getPets() || userModel.getPets().isEmpty()) {
+                return;
+            }
+            getPetLocation(userModel.getPets().get(sPosition).getPetsId());
+        });
         fabMenu.setOnClickListener(v -> toggleSubMenu());
         fabLogout.setOnClickListener(v -> logout());
         fabRelocate.setOnClickListener(v -> {
@@ -111,7 +115,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     private void init() {
         userModel = new Gson().fromJson(spUtils.getString(SpUtils.KEY_USER_OBJECT), UserModel.User.class);
-        spinner.setText((null != userModel.getPets() && !userModel.getPets().isEmpty()) ? userModel.getPets().get(0).getPetsNickname() : "None");
+        if ((null != userModel.getPets() && !userModel.getPets().isEmpty())) {
+            spinner.setText(userModel.getPets().get(0).getPetsNickname());
+            sPosition = 0;
+        } else {
+            spinner.setText("None");
+            ivPetHistory.setEnabled(false);
+            ivPetHistory.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_list_disabled));
+            locatePet.setVisibility(View.GONE);
+        }
     }
 
     private void toggleSubMenu() {
@@ -169,9 +181,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         }
     }
 
-    private void focusPetLocation(Double latitude, Double longitude) {
+    private void focusPetLocation(String petName, Double latitude, Double longitude) {
         LatLng petLocation = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(petLocation).title("Your Pet"));
+        mMap.addMarker(new MarkerOptions().position(petLocation).title(petName));
         CameraPosition cameraPosition = new CameraPosition.Builder().target(petLocation).zoom(18).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
@@ -203,12 +215,36 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
+    private void getPetLocation(String petsId) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("petId", petsId);
+        String json = new Gson().toJson(map);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+        retrofitProvider.makeRequest(apiService.GetPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<PetsModal>() {
+            @Override
+            public void onSuccess(PetsModal response) {
+                loadingDialog.hideDialog();
+                focusPetLocation(userModel.getPets().get(sPosition).getPetsNickname(), response.getPetLocationHistory().get(0).getPetLatitude(), response.getPetLocationHistory().get(0).getPetLongitude());
+            }
+
+            @Override
+            public void onError(int statusCode, String errorMessage) {
+                loadingDialog.hideDialog();
+                Log.e(TAG, "Request failed with code: " + statusCode);
+                Toast.makeText(MainActivity.this, "Something went wrong.\n Please try again later!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void updateOwner() {
         retrofitProvider.makeRequest(apiService.GetMySelf("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN)), new RetrofitCallback<UserModel.User>() {
             @Override
             public void onSuccess(UserModel.User response) {
                 loadingDialog.hideDialog();
                 spUtils.saveString(SpUtils.KEY_USER_OBJECT, new Gson().toJson(response));
+                locatePet.setVisibility(View.VISIBLE);
+                ivPetHistory.setEnabled(true);
+                ivPetHistory.setImageDrawable(AppCompatResources.getDrawable(MainActivity.this, R.drawable.ic_list));
                 init();
             }
 
@@ -267,8 +303,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             switch (msgEvent.getBusinessKey()) {
                 case MsgEvent.UPDATE_PET_LIST:
                     updateOwner();
-                    break;
-                case MsgEvent.UPDATE_USER_INFO:
                     break;
             }
         });
