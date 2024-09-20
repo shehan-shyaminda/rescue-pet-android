@@ -12,15 +12,18 @@ public class SpUtils {
     public static final String KEY_USERID = "key_userid";
     public static final String KEY_IS_LOGGED_IN = "key_is_logged_in";
     public static final String KEY_AUTH_TOKEN = "key_auth_token";
+    public static final String FCM_TOKEN = "key_fcm_token";
 
     private final SharedPreferences preferences;
+    private final SharedPreferences.Editor editor;
 
     public SpUtils(Context context) {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        editor = preferences.edit();
     }
 
     public void saveBoolean(String Key, boolean value) {
-        SharedPreferences.Editor editor = preferences.edit();
+
         editor.putBoolean(Key, value);
         editor.apply();
     }
@@ -30,7 +33,6 @@ public class SpUtils {
     }
 
     public void saveString(String Key, String value) {
-        SharedPreferences.Editor editor = preferences.edit();
         editor.putString(Key, value);
         editor.apply();
     }
@@ -40,7 +42,6 @@ public class SpUtils {
     }
 
     public void saveInt(String Key, int value) {
-        SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(Key, value);
         editor.apply();
     }
@@ -50,8 +51,11 @@ public class SpUtils {
     }
 
     public void clear() {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
+        editor.remove(SpUtils.KEY_USER_OBJECT);
+        editor.remove(SpUtils.KEY_USERNAME);
+        editor.remove(SpUtils.KEY_USERID);
+        editor.remove(SpUtils.KEY_IS_LOGGED_IN);
+        editor.remove(SpUtils.KEY_AUTH_TOKEN);
         editor.apply();
     }
 }

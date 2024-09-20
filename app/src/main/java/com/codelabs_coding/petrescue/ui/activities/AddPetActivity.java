@@ -112,7 +112,7 @@ public class AddPetActivity extends BaseActivity {
         map.put("petLocationHistory",locationMap);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.AddNewPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<UserModel.User.Pet>() {
+        retrofitProvider.makeRequest(apiService.addNewPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<UserModel.User.Pet>() {
             @Override
             public void onSuccess(UserModel.User.Pet response) {
                 hideDialog();

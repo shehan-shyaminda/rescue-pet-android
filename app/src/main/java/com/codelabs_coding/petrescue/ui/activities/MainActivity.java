@@ -142,8 +142,21 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         DialogUtils.showCancelOkDialog(this, "Exit App", "Are you sure you want to exit?", "Yes", "Cancel", new DialogUtils.OnDialogClickListener() {
             @Override
             public void onPositiveClick() {
-                spUtils.clear();
-                CommonUtils.jumpToActivityWithClearStack(MainActivity.this, LoginActivity.class);
+                retrofitProvider.makeRequest(apiService.revokeTokenFCM("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN)), new RetrofitCallback<String>() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.i(TAG, "FCM Request onSuccess: " + response);
+                        spUtils.clear();
+                        CommonUtils.jumpToActivityWithClearStack(MainActivity.this, LoginActivity.class);
+                    }
+
+                    @Override
+                    public void onError(int statusCode, String errorMessage) {
+                        Log.e(TAG, "FCM Request failed with code: " + statusCode);
+                        spUtils.clear();
+                        CommonUtils.jumpToActivityWithClearStack(MainActivity.this, LoginActivity.class);
+                    }
+                });
             }
 
             @Override
@@ -195,7 +208,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         map.put("userLongitude", longitude);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.UpdateOwnerLocation("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<UserModel.User>() {
+        retrofitProvider.makeRequest(apiService.updateOwnerLocation("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<UserModel.User>() {
             @Override
             public void onSuccess(UserModel.User response) {
                 loadingDialog.hideDialog();
@@ -220,7 +233,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         map.put("petId", petsId);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.GetPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<PetsModal>() {
+        retrofitProvider.makeRequest(apiService.getPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<PetsModal>() {
             @Override
             public void onSuccess(PetsModal response) {
                 loadingDialog.hideDialog();
@@ -237,7 +250,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void updateOwner() {
-        retrofitProvider.makeRequest(apiService.GetMySelf("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN)), new RetrofitCallback<UserModel.User>() {
+        retrofitProvider.makeRequest(apiService.getMySelf("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN)), new RetrofitCallback<UserModel.User>() {
             @Override
             public void onSuccess(UserModel.User response) {
                 loadingDialog.hideDialog();

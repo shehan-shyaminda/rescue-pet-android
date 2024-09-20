@@ -52,7 +52,7 @@ public class LoginActivity extends BaseActivity {
         map.put("userPassword", CommonUtils.getStrEditView(txtPassword));
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.UserLogin(requestBody), new RetrofitCallback<UserModel>() {
+        retrofitProvider.makeRequest(apiService.userLogin(requestBody), new RetrofitCallback<UserModel>() {
             @Override
             public void onSuccess(UserModel response) {
                 loadingDialog.hideDialog();
@@ -61,8 +61,26 @@ public class LoginActivity extends BaseActivity {
                 spUtils.saveString(SpUtils.KEY_USERNAME, response.getUser().getUsername());
                 spUtils.saveBoolean(SpUtils.KEY_IS_LOGGED_IN, true);
                 spUtils.saveString(SpUtils.KEY_AUTH_TOKEN, response.getAccessToken());
-                CommonUtils.startActivity(LoginActivity.this, MainActivity.class);
-                finish();
+
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("fcmToken", spUtils.getString(SpUtils.FCM_TOKEN));
+                String json = new Gson().toJson(map);
+                RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
+                retrofitProvider.makeRequest(apiService.renewTokenFCM("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<String>() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Log.i(TAG, "FCM Request onSuccess: " + response);
+                        CommonUtils.startActivity(LoginActivity.this, MainActivity.class);
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(int statusCode, String errorMessage) {
+                        Log.e(TAG, "FCM Request failed with code: " + statusCode);
+                        CommonUtils.startActivity(LoginActivity.this, MainActivity.class);
+                        finish();
+                    }
+                });
             }
 
             @Override

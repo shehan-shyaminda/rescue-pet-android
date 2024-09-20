@@ -71,7 +71,7 @@ public class RegisterActivity extends BaseActivity {
         map.put("userLatitude", selfLocation.latitude);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.CreateUser(requestBody), new RetrofitCallback<UserModel>() {
+        retrofitProvider.makeRequest(apiService.createUser(requestBody), new RetrofitCallback<UserModel>() {
             @Override
             public void onSuccess(UserModel response) {
                 loadingDialog.hideDialog();

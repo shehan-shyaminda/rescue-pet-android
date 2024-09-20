@@ -57,7 +57,7 @@ public class PetHistoryActivity extends BaseActivity {
         map.put("petId", petId);
         String json = new Gson().toJson(map);
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);
-        retrofitProvider.makeRequest(apiService.GetPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<PetsModal>() {
+        retrofitProvider.makeRequest(apiService.getPet("Bearer " + spUtils.getString(SpUtils.KEY_AUTH_TOKEN), requestBody), new RetrofitCallback<PetsModal>() {
             @Override
             public void onSuccess(PetsModal response) {
                 loadingDialog.hideDialog();
